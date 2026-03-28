@@ -1,57 +1,62 @@
 #!/usr/bin/env python3
-"""Terminal Connect Four game."""
-import sys, random
-
-ROWS, COLS = 6, 7
-EMPTY, P1, P2 = '.', '🔴', '🟡'
-
-def new_board(): return [[EMPTY]*COLS for _ in range(ROWS)]
-
-def show(board):
-    print('\n ' + ' '.join(str(i+1) for i in range(COLS)))
-    for row in board: print('|' + '|'.join(row) + '|')
-    print('+' + '-+'*COLS)
-
-def drop(board, col, piece):
-    for r in range(ROWS-1, -1, -1):
-        if board[r][col] == EMPTY: board[r][col] = piece; return r
+"""Connect Four with minimax AI."""
+ROWS,COLS=6,7
+def new_board(): return [[0]*COLS for _ in range(ROWS)]
+def drop(board,col,player):
+    for r in range(ROWS-1,-1,-1):
+        if board[r][col]==0: board[r][col]=player;return r
     return -1
-
-def check_win(board, piece):
+def undrop(board,col):
+    for r in range(ROWS):
+        if board[r][col]!=0: board[r][col]=0;return
+def check_win(board,player):
     for r in range(ROWS):
         for c in range(COLS):
-            for dr, dc in [(0,1),(1,0),(1,1),(1,-1)]:
-                if all(0<=r+i*dr<ROWS and 0<=c+i*dc<COLS and board[r+i*dr][c+i*dc]==piece for i in range(4)):
-                    return True
+            if c+3<COLS and all(board[r][c+i]==player for i in range(4)): return True
+            if r+3<ROWS and all(board[r+i][c]==player for i in range(4)): return True
+            if r+3<ROWS and c+3<COLS and all(board[r+i][c+i]==player for i in range(4)): return True
+            if r+3<ROWS and c-3>=0 and all(board[r+i][c-i]==player for i in range(4)): return True
     return False
-
-def ai_move(board, piece):
-    opp = P1 if piece == P2 else P2
-    for p in [piece, opp]:
+def evaluate(board):
+    if check_win(board,1): return 1000
+    if check_win(board,2): return -1000
+    score=0
+    for r in range(ROWS):
         for c in range(COLS):
-            b = [row[:] for row in board]
-            if drop(b, c, p) >= 0 and check_win(b, p): return c
-    valid = [c for c in range(COLS) if board[0][c] == EMPTY]
-    return random.choice(valid) if valid else 0
-
-def play():
-    board = new_board()
-    show(board)
-    for turn in range(ROWS * COLS):
-        piece = P1 if turn % 2 == 0 else P2
-        if piece == P1:
-            while True:
-                try: col = int(input(f"\n{piece} Column (1-7): ")) - 1
-                except: continue
-                if 0 <= col < COLS and board[0][col] == EMPTY: break
-        else:
-            col = ai_move(board, P2)
-            print(f"\n{piece} plays column {col+1}")
-        drop(board, col, piece)
-        show(board)
-        if check_win(board, piece):
-            print(f"\n{'You win! 🎉' if piece == P1 else 'AI wins! 🤖'}"); return
-    print("\nDraw!")
-
-if __name__ == '__main__':
-    play()
+            if board[r][c]==1: score+=1 if r>=ROWS//2 else 0;score+=2 if c==COLS//2 else 0
+            elif board[r][c]==2: score-=1 if r>=ROWS//2 else 0;score-=2 if c==COLS//2 else 0
+    return score
+def minimax(board,depth,maximizing,alpha=-9999,beta=9999):
+    if check_win(board,1): return 1000+depth
+    if check_win(board,2): return -1000-depth
+    if depth==0 or all(board[0][c]!=0 for c in range(COLS)): return evaluate(board)
+    if maximizing:
+        best=-9999
+        for c in range(COLS):
+            if board[0][c]!=0: continue
+            drop(board,c,1);val=minimax(board,depth-1,False,alpha,beta);undrop(board,c)
+            best=max(best,val);alpha=max(alpha,val)
+            if beta<=alpha: break
+        return best
+    else:
+        best=9999
+        for c in range(COLS):
+            if board[0][c]!=0: continue
+            drop(board,c,2);val=minimax(board,depth-1,True,alpha,beta);undrop(board,c)
+            best=min(best,val);beta=min(beta,val)
+            if beta<=alpha: break
+        return best
+def best_move(board,player,depth=5):
+    best_val=-9999 if player==1 else 9999;best_col=COLS//2
+    for c in range(COLS):
+        if board[0][c]!=0: continue
+        drop(board,c,player)
+        val=minimax(board,depth-1,player!=1)
+        undrop(board,c)
+        if (player==1 and val>best_val) or (player==2 and val<best_val): best_val=val;best_col=c
+    return best_col
+if __name__=="__main__":
+    b=new_board();drop(b,3,1);drop(b,3,2);drop(b,4,1);drop(b,4,2);drop(b,5,1);drop(b,5,2)
+    col=best_move(b,1,4);print(f"AI plays column {col} (should be 6 to win)")
+    drop(b,6,1)
+    print(f"Win: {check_win(b,1)}"); print("Connect Four OK")

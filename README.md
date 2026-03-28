@@ -1,6 +1,13 @@
-# connect4
-Terminal Connect Four game with AI. Zero dependencies.
+# Connect4
+
+Connect Four with minimax AI.
+
 ## Usage
+
 ```bash
 python3 connect4.py
 ```
+
+## License
+
+MIT
