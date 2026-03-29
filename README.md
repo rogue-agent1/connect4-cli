@@ -1,14 +1,9 @@
-# connect4
+# connect4-cli
 
-Connect Four game engine
+Connect Four game with AI. Zero-dependency, single-file Python CLI.
 
 ## Usage
 
 ```bash
 python3 connect4.py --help
 ```
-
-## Features
-
-- Zero dependencies (Python 3.8+)
-- Single file implementation
