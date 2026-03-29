@@ -1,9 +1,10 @@
-# connect4-cli
+# connect4
 
-Connect Four game with AI. Zero-dependency, single-file Python CLI.
+Single-file Python CLI. Zero dependencies.
 
 ## Usage
 
 ```bash
-python3 connect4.py --help
+python3 connect4.py
+python3 connect4.py test
 ```
