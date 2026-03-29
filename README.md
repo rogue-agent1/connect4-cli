@@ -1,13 +1,14 @@
-# Connect4
+# connect4
 
-Connect Four with minimax AI.
+Connect Four game engine
 
 ## Usage
 
 ```bash
-python3 connect4.py
+python3 connect4.py --help
 ```
 
-## License
+## Features
 
-MIT
+- Zero dependencies (Python 3.8+)
+- Single file implementation
